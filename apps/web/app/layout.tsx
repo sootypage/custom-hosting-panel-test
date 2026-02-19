@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="text-sm text-zinc-400">MVP — nodes + servers + console (next)</div>
             </div>
             <div className="text-xs text-zinc-400">
-              API: <span className="font-mono">{process.env.NEXT_PUBLIC_API_URL || "set NEXT_PUBLIC_API_URL"}</span>
+              API: <span className="font-mono">{process.env.NEXT_PUBLIC_API_URL || "/api"}</span>
             </div>
           </header>
           <main className="mt-6"><div className="mx-auto max-w-6xl px-4 py-4">

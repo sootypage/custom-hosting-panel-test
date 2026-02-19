@@ -8,15 +8,15 @@ This repository is a **starter skeleton** for a hosting-company style game panel
 
 ## Super easy install (Panel VPS)
 ```bash
-git clone https://github.com/sootypage/custom-hosting-panel-test.git
-cd custom-hosting-panel-test
+git clone https://github.com/sootypage/custom-hosting-panel.git
+cd custom-hosting-panel
 
 # (optional) installs Docker + Node 20
 chmod +x install.sh
 ./install.sh
 
 # installs repo deps (workspaces)
-sudo npm run install:all
+npm run install:all
 
 # builds + starts web/api + db
 npm run start

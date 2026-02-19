@@ -1,7 +1,6 @@
 services:
   postgres:
-    profiles:
-    - panel
+    profiles: ["panel"]
     image: postgres:16
     restart: unless-stopped
     environment:
@@ -9,65 +8,68 @@ services:
       POSTGRES_PASSWORD: panelpass
       POSTGRES_DB: paneldb
     volumes:
-    - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+
   redis:
-    profiles:
-    - panel
+    profiles: ["panel"]
     image: redis:7
     restart: unless-stopped
+
   api:
-    profiles:
-    - panel
+    profiles: ["panel"]
     build: ./apps/api
     restart: unless-stopped
     environment:
-    - JWT_SECRET=${JWT_SECRET:-dev_secret_change_me}
-    - PANEL_PUBLIC_URL=${PANEL_PUBLIC_URL:-http://localhost}
+      DATABASE_URL: postgres://panel:panelpass@postgres:5432/paneldb
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: change_me_super_long
+      PANEL_PUBLIC_URL: http://localhost
     depends_on:
-    - postgres
-    - redis
+      - postgres
+      - redis
     expose:
-    - '4000'
+      - "4000"
+
   web:
-    profiles:
-    - panel
+    profiles: ["panel"]
     build: ./apps/web
     restart: unless-stopped
     environment:
-    - HOSTNAME=0.0.0.0
-    - PORT=3000
+      NEXT_PUBLIC_API_URL: /api
     depends_on:
-    - api
+      - api
     expose:
-    - '3000'
+      - "3000"
+
   nginx:
-    profiles:
-    - panel
+    profiles: ["panel"]
     image: nginx:alpine
     restart: unless-stopped
     depends_on:
-    - web
-    - api
+      - web
+      - api
     ports:
-    - 80:80
-    - 443:443
+      - "80:80"
+      - "443:443"
     volumes:
-    - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
   node-daemon:
-    profiles:
-    - node
+    profiles: ["node"]
     build:
       context: ./apps/node
     container_name: custom-hosting-panel-node
     restart: unless-stopped
     environment:
-    - NODE_TOKEN=${NODE_TOKEN:-node_secret}
+      NODE_TOKEN: "${NODE_TOKEN:-node_secret}"
+      DATA_DIR: "/data"
     volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    - node_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - node_data:/data
     ports:
-    - 5000:5000
+      - "5000:5000"
+
+
 volumes:
-  postgres_data: null
-  node_data: null
+  postgres_data:
+  node_data:

@@ -9,9 +9,5 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# Next standalone server reads HOSTNAME/PORT
-ENV HOSTNAME=0.0.0.0
-ENV PORT=3000
-
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start", "--", "-p", "3000", "-H", "0.0.0.0"]

@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone"
+  // keep default output so `next start` works in Docker
 };
+
 export default nextConfig;

@@ -1,37 +1,42 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Update script that keeps your .env + data volumes
+# Update script for Custom Hosting Panel
+# Keeps your Docker volumes (database data) by default.
+#
+# Usage:
+#   cd ~/custom-hosting-panel
+#   chmod +x update.sh
+#   ./update.sh
+#
+# Notes:
+# - If you edited files locally, git may refuse to pull. In that case, commit your changes
+#   or run: git stash -u
+# - Your Postgres data is stored in a Docker volume (postgres_data) and will NOT be deleted
+#   unless you explicitly run docker compose down -v
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$ROOT_DIR"
-
-echo "== Updating Custom Hosting Panel =="
-
-if command -v git >/dev/null 2>&1 && [ -d .git ]; then
-  echo "Pulling latest from git..."
-  # keep local changes safe
-  if ! git diff --quiet || ! git diff --cached --quiet; then
-    echo "Local changes detected; stashing..."
-    git stash push -u -m "auto-stash before update" >/dev/null
-    STASHED=1
-  else
-    STASHED=0
-  fi
-  git pull --rebase
-
-  if [ "${STASHED}" = "1" ]; then
-    echo "Re-applying your local changes..."
-    git stash pop || true
-  fi
-else
-  echo "No git repo detected, skipping git pull."
+if [[ ! -f "./docker-compose.yml" ]]; then
+  echo "ERROR: Run this from the repo root (where docker-compose.yml is)."
+  exit 1
 fi
 
-echo "Installing workspace dependencies..."
-npm install --workspaces
+echo "== Updating repo =="
+git fetch --all --prune
 
-echo "Rebuilding + restarting containers..."
-docker compose --profile panel --profile node up -d --build
+# Determine default branch (main/master) safely
+DEFAULT_BRANCH="$(git remote show origin | awk '/HEAD branch/ {print $NF}')"
+if [[ -z "$DEFAULT_BRANCH" ]]; then
+  DEFAULT_BRANCH="main"
+fi
 
-echo "Done."
+echo "Using branch: $DEFAULT_BRANCH"
+git checkout "$DEFAULT_BRANCH" >/dev/null 2>&1 || true
+git pull --ff-only origin "$DEFAULT_BRANCH"
+
+echo
+echo "== Rebuilding + restarting containers =="
+docker compose up -d --build
+
+echo
+echo "== Done =="
+echo "Check logs with: docker compose logs -f nginx"
