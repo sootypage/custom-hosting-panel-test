@@ -16,7 +16,7 @@ chmod +x install.sh
 ./install.sh
 
 # installs repo deps (workspaces)
-npm run install:all
+sudo npm run install:all
 
 # builds + starts web/api + db
 npm run start
