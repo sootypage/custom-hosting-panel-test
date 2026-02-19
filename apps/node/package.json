@@ -1,0 +1,14 @@
+{
+  "name": "@panel/node",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dockerode": "^4.0.2",
+    "fastify": "^4.29.0"
+  }
+}

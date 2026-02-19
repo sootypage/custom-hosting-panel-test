@@ -1,0 +1,21 @@
+{
+  "name": "custom-hosting-panel",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "apps/node"
+  ],
+  "devDependencies": {
+    "turbo": "^2.3.4",
+    "typescript": "^5.7.3"
+  },
+  "scripts": {
+    "install:all": "npm install --workspaces && bash scripts/install.sh",
+    "start": "docker compose --profile panel --profile node up -d --build",
+    "dev": "docker compose up --build",
+    "stop": "docker compose --profile panel --profile node down",
+    "logs": "docker compose --profile panel --profile node logs -f",
+    "status": "docker compose --profile panel --profile node ps"
+  }
+}

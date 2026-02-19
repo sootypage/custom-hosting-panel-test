@@ -1,0 +1,73 @@
+services:
+  postgres:
+    profiles:
+    - panel
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: panel
+      POSTGRES_PASSWORD: panelpass
+      POSTGRES_DB: paneldb
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+  redis:
+    profiles:
+    - panel
+    image: redis:7
+    restart: unless-stopped
+  api:
+    profiles:
+    - panel
+    build: ./apps/api
+    restart: unless-stopped
+    environment:
+    - JWT_SECRET=${JWT_SECRET:-dev_secret_change_me}
+    - PANEL_PUBLIC_URL=${PANEL_PUBLIC_URL:-http://localhost}
+    depends_on:
+    - postgres
+    - redis
+    expose:
+    - '4000'
+  web:
+    profiles:
+    - panel
+    build: ./apps/web
+    restart: unless-stopped
+    environment:
+    - HOSTNAME=0.0.0.0
+    - PORT=3000
+    depends_on:
+    - api
+    expose:
+    - '3000'
+  nginx:
+    profiles:
+    - panel
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+    - web
+    - api
+    ports:
+    - 80:80
+    - 443:443
+    volumes:
+    - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    - /etc/letsencrypt:/etc/letsencrypt:ro
+  node-daemon:
+    profiles:
+    - node
+    build:
+      context: ./apps/node
+    container_name: custom-hosting-panel-node
+    restart: unless-stopped
+    environment:
+    - NODE_TOKEN=${NODE_TOKEN:-node_secret}
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - node_data:/data
+    ports:
+    - 5000:5000
+volumes:
+  postgres_data: null
+  node_data: null
